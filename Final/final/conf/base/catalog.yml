@@ -1,49 +1,27 @@
-mails:
+data:
   type: pandas.CSVDataset
   filepath: data/01_raw/data.csv
 
-cleared_data:
+preprocessed_data:
   type: pandas.ParquetDataset
-  filepath: data/02_intermediate/cleared_data.parquet
-
-mapped_spam_ham:
-  type: pandas.ParquetDataset
-  filepath: data/02_intermediate/cleared_data_maps.parquet
-
-with_ratio_upper_case_message:
-  type: pandas.ParquetDataset
-  filepath: data/03_primary/with_ratio_upper_case_message.parquet
-
-with_ratio_upper_and_special_case_subject:
-  type: pandas.ParquetDataset
-  filepath: data/03_primary/with_ratio_upper_and_special_case_subject.parquet
-
-final_data:
-  type: pandas.ParquetDataset
-  filepath: data/04_feature/final_data.parquet
+  filepath: data/02_intermediate/preprocessed_data.parquet
 
 train_data:
   type: pandas.ParquetDataset
-  filepath: data/05_model_input/train_data.parquet
+  filepath: data/03_primary/train_data.parquet
 
 test_data:
   type: pandas.ParquetDataset
-  filepath: data/05_model_input/test_data.parquet
+  filepath: data/03_primary/test_data.parquet
 
-autogluon_model:
+model_output:
   type: pickle.PickleDataset
-  filepath: data/06_models/autogluon_model
+  filepath: data/06_models/autogluon_predictor.pkl
 
-evaluation_report:
-  type: pickle.PickleDataset
-  filepath: data/07_model_output/evaluation_report
+model_leaderboard:
+  type: kedro_datasets.pandas.csv_dataset.CSVDataset
+  filepath: data/08_reporting/model_leaderboard.csv
 
-report_saved:
-  type: pandas.CSVDataset
-  filepath: data/08_reporting/evaluation.csv
-
-leaderboard:
-  type: pandas.CSVDataset
-  filepath: data/08_reporting/leaderboard.csv
-
-
+model_metrics:
+  type: pandas.JSONDataset
+  filepath: data/08_reporting/model_metrics.json

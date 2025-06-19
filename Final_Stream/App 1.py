@@ -10,7 +10,7 @@ load_dotenv()
 BLOB_NAME = "ag.7z"
 LOCAL_ZIP = "ag.7z"
 EXTRACT_DIR = "autogluon_model"
-MODEL_SUBDIR = "ag-20250618_005103"
+MODEL_SUBDIR = "ag-20250619_000809"
 MODEL_PATH = os.path.join(EXTRACT_DIR, MODEL_SUBDIR)
 
 # ------------------ Pobieranie i ładowanie modelu ------------------
@@ -59,18 +59,21 @@ def generate_text_features(subject: str, message: str) -> dict:
     lowercase_letters = sum(c.islower() for c in full_text)
     special_digits = sum(not c.isalpha() for c in full_text)
 
+    ratio_special_case = round(total_letters / special_digits,2) if special_digits > 0 else 0
     ratio_upper_case = round(uppercase_letters / lowercase_letters, 2) if lowercase_letters > 0 else 0
     ratio_upper_and_special_case = round(total_letters / special_digits, 2) if special_digits > 0 else 0
 
     return {
-        'ratio_upper_case': ratio_upper_case,
         'ratio_upper_and_special_case': ratio_upper_and_special_case,
+        'ratio_special_case': ratio_special_case,
+        'ratio_upper_case': ratio_upper_case,
+
     }
 def generate_sub_mess(subject: str, message: str)->dict:
     return  {
         'Subject': subject,
         'Message': message,
-        'Date': str(pd.Timestamp.now())
+        # 'Date': str(pd.Timestamp.now())
     }
 
 # ------------------ Streamlit GUI ------------------
@@ -88,7 +91,7 @@ if st.button("🔍 Wygeneruj cechy i sprawdź spam"):
         st.warning("⚠️ Uzupełnij temat i treść wiadomości.")
     else:
         # Generowanie cech
-        datetime_features = generate_datetime_features(pd.to_datetime(date))
+        # datetime_features = generate_datetime_features(pd.to_datetime(date))
         text_features = generate_text_features(subject, message)
         submess=generate_sub_mess(subject, message)
         # Przygotowanie danych
@@ -99,7 +102,7 @@ if st.button("🔍 Wygeneruj cechy i sprawdź spam"):
         }
 
         full_data.update(text_features)
-        full_data.update(datetime_features)
+        # full_data.update(datetime_features)
         full_data.update(submess)
         st.success("✅ Cechy zostały wygenerowane!")
 
