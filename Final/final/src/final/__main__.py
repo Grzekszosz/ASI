@@ -1,6 +1,3 @@
-"""Final file for ensuring the package is executable
-as `final` and `python -m final`
-"""
 import sys
 from pathlib import Path
 from typing import Any
