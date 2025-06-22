@@ -6,14 +6,13 @@ from azure.storage.blob import BlobServiceClient
 from autogluon.tabular import TabularPredictor
 from dotenv import load_dotenv
 load_dotenv()
-# ------------------ Konfiguracja ------------------
+
 BLOB_NAME = "ag.7z"
 LOCAL_ZIP = "ag.7z"
 EXTRACT_DIR = "autogluon_model"
 MODEL_SUBDIR = "ag-20250619_000809"
 MODEL_PATH = os.path.join(EXTRACT_DIR, MODEL_SUBDIR)
 
-# ------------------ Pobieranie i ładowanie modelu ------------------
 @st.cache_resource
 def download_and_extract_model():
 
@@ -34,7 +33,6 @@ def download_and_extract_model():
 
     return TabularPredictor.load(MODEL_PATH)
 
-# ------------------ Funkcje pomocnicze ------------------
 def generate_datetime_features(date: pd.Timestamp) -> dict:
     return {
         'year_num': date.year,
@@ -73,10 +71,8 @@ def generate_sub_mess(subject: str, message: str)->dict:
     return  {
         'Subject': subject,
         'Message': message,
-        # 'Date': str(pd.Timestamp.now())
     }
 
-# ------------------ Streamlit GUI ------------------
 st.set_page_config(page_title="Email Feature Extractor", page_icon="📧")
 st.title("📧 Email Feature Extractor")
 st.write("Wprowadź dane e-maila, a system wygeneruje cechy potrzebne do analizy i sprawdzi, czy to spam.")
@@ -90,11 +86,8 @@ if st.button("🔍 Wygeneruj cechy i sprawdź spam"):
     if not subject.strip() or not message.strip():
         st.warning("⚠️ Uzupełnij temat i treść wiadomości.")
     else:
-        # Generowanie cech
-        # datetime_features = generate_datetime_features(pd.to_datetime(date))
         text_features = generate_text_features(subject, message)
         submess=generate_sub_mess(subject, message)
-        # Przygotowanie danych
         full_data = {
             "subject": subject,
             "message": message,
@@ -106,7 +99,6 @@ if st.button("🔍 Wygeneruj cechy i sprawdź spam"):
         full_data.update(submess)
         st.success("✅ Cechy zostały wygenerowane!")
 
-        # Wyświetlanie danych
         st.markdown("## 📥 Dane wejściowe")
         st.code(subject)
         st.code(message)
@@ -118,23 +110,19 @@ if st.button("🔍 Wygeneruj cechy i sprawdź spam"):
         for key, value in features_only.items():
             st.write(f"- **{key}**: {value}")
 
-        # Pobieranie modelu
         try:
             model = download_and_extract_model()
         except Exception as e:
             st.error(f"❌ Błąd podczas pobierania lub ładowania modelu: {e}")
             st.stop()
 
-        # Klasyfikacja
         feature_df = pd.DataFrame([features_only])
         predictor = TabularPredictor.load(MODEL_PATH)
-        # Kategoryzacja wg metadanych modelu
         cat_columns = predictor.feature_metadata.type_map_raw.get("categorical", [])
         for col in cat_columns:
             if col in feature_df.columns:
                 feature_df[col] = feature_df[col].astype("category")
 
-        # prediction = model.predict(feature_df, model='CatBoost')[0]
         prediction = model.predict(feature_df)[0]
         prediction_proba = model.predict_proba(feature_df)[0]
         full_proba = model.predict_proba(feature_df)
@@ -161,7 +149,6 @@ if st.button("🔍 Wygeneruj cechy i sprawdź spam"):
             spam_proba = full_proba[0][1]
             ham_proba = full_proba[0][0]
         elif isinstance(full_proba, float):
-            # fallback – tylko dla modeli zwracających 1 liczbową wartość (np. prawdopodobieństwo klasy 1)
             spam_proba = full_proba
             ham_proba = 1 - spam_proba
         else:
@@ -171,7 +158,6 @@ if st.button("🔍 Wygeneruj cechy i sprawdź spam"):
         else:
             st.success(f"📬 To wygląda na NIE-SPAM (prawdopodobieństwo: {round(spam_proba*100, 2)}%)")
 
-        # Przycisk pobrania CSV
         csv = pd.DataFrame([full_data]).to_csv(index=False).encode('utf-8')
         st.download_button(
             label="📥 Pobierz wszystkie dane jako CSV",
