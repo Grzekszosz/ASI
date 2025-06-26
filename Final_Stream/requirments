@@ -8,5 +8,4 @@ azure.storage.blob
 catboost
 lightgbm
 xgboost
-zipfile
 py7zr
